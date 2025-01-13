@@ -4,8 +4,10 @@ import noble, { Peripheral } from "@abandonware/noble";
 const app = express();
 const port = 3000;
 
-const discoveredDevices: Map<string, { name: string; uuid: string }> =
-	new Map();
+const discoveredDevices: Map<
+	string,
+	{ name: string; uuid: string; peripheral: Peripheral }
+> = new Map();
 let connectedDevice: Peripheral | null = null;
 
 noble.on("stateChange", (state: string) => {
@@ -22,6 +24,7 @@ noble.on("discover", (peripheral: Peripheral) => {
 		discoveredDevices.set(peripheral.id, {
 			name: peripheral.advertisement.localName || "Unknown",
 			uuid: peripheral.uuid,
+			peripheral,
 		});
 
 		console.log(
@@ -52,17 +55,11 @@ app.post("/connect/:deviceId", (req: Request, res: Response) => {
 	const { deviceId } = req.params;
 	const deviceInfo = discoveredDevices.get(deviceId);
 
-	if (!deviceInfo) {
+	if (!deviceInfo || !deviceInfo.peripheral) {
 		return res.status(404).json({ error: "Device not found" });
 	}
 
-	const peripheral = Array.from(
-		(noble as any)._peripherals.values() as Iterable<Peripheral>
-	).find((p) => p.id === String(deviceId));
-
-	if (!peripheral) {
-		return res.status(404).json({ error: "Peripheral not found" });
-	}
+	const { peripheral } = deviceInfo;
 
 	peripheral.connect((error?: string) => {
 		if (error) {
@@ -72,7 +69,10 @@ app.post("/connect/:deviceId", (req: Request, res: Response) => {
 
 		console.log(`Connected to device: ${deviceInfo.name}`);
 		connectedDevice = peripheral;
-		res.json({ message: "Connected to device", device: deviceInfo });
+		res.json({
+			message: "Connected to device",
+			device: deviceInfo.peripheral,
+		});
 	});
 });
 
