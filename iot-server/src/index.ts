@@ -4,10 +4,8 @@ import noble, { Peripheral } from "@abandonware/noble";
 const app = express();
 const port = 3000;
 
-const discoveredDevices: Map<
-	string,
-	{ id: string; name: string; uuid: string }
-> = new Map();
+const discoveredDevices: Map<string, { name: string; uuid: string }> =
+	new Map();
 let connectedDevice: Peripheral | null = null;
 
 noble.on("stateChange", (state: string) => {
@@ -22,7 +20,6 @@ noble.on("stateChange", (state: string) => {
 noble.on("discover", (peripheral: Peripheral) => {
 	if (!discoveredDevices.has(peripheral.id)) {
 		discoveredDevices.set(peripheral.id, {
-			id: peripheral.id,
 			name: peripheral.advertisement.localName || "Unknown",
 			uuid: peripheral.uuid,
 		});
