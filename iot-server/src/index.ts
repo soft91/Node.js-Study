@@ -88,6 +88,63 @@ app.get("/connected-device", (req: Request, res: Response) => {
 	});
 });
 
+app.get(
+	"/read-data/:serviceId/:characteristicId",
+	async (req: Request, res: Response) => {
+		const { serviceId, characteristicId } = req.params;
+
+		if (!connectedDevice) {
+			return res.status(404).json({ error: "No device connected" });
+		}
+
+		try {
+			// Discover services and characteristics
+			connectedDevice.discoverSomeServicesAndCharacteristics(
+				[serviceId],
+				[characteristicId],
+				(error, services, characteristics) => {
+					if (error) {
+						console.error(
+							"Error discovering services/characteristics:",
+							error
+						);
+						return res
+							.status(500)
+							.json({
+								error: "Failed to discover services/characteristics",
+							});
+					}
+
+					if (!characteristics || characteristics.length === 0) {
+						return res
+							.status(404)
+							.json({ error: "Characteristic not found" });
+					}
+
+					// Read the first matching characteristic
+					const characteristic = characteristics[0];
+					characteristic.read((err, data) => {
+						if (err) {
+							console.error("Error reading characteristic:", err);
+							return res
+								.status(500)
+								.json({ error: "Failed to read characteristic" });
+						}
+
+						console.log(
+							`Data from characteristic: ${data.toString("hex")}`
+						);
+						res.json({ data: data.toString("hex") });
+					});
+				}
+			);
+		} catch (err) {
+			console.error("Unexpected error:", err);
+			res.status(500).json({ error: "Unexpected error occurred" });
+		}
+	}
+);
+
 app.listen(port, () => {
 	console.log(`Server running on http://localhost:${port}`);
 });
