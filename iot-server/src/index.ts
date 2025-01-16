@@ -98,7 +98,6 @@ app.get(
 		}
 
 		try {
-			// Discover services and characteristics
 			connectedDevice.discoverSomeServicesAndCharacteristics(
 				[serviceId],
 				[characteristicId],
@@ -121,7 +120,6 @@ app.get(
 							.json({ error: "Characteristic not found" });
 					}
 
-					// Read the first matching characteristic
 					const characteristic = characteristics[0];
 					characteristic.read((err, data) => {
 						if (err) {
