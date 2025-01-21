@@ -1,6 +1,7 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import noble, { Peripheral } from '@abandonware/noble';
 
+// 비즈니스 로직과 데이터를 처리, 외부 API 또는 데이터베이스와의 통신.
 @Injectable()
 export class BLEService {
   private discoveredDevices: Map<

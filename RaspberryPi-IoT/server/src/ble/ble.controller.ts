@@ -2,6 +2,7 @@ import { Controller, Get, Post, Param, Res, HttpStatus } from '@nestjs/common';
 import { BLEService } from './ble.service';
 import { Response } from 'express';
 
+// 클라이언트 요청을 처리하고, 응답을 반환. 필요한 경우 서비스를 호출.
 @Controller('ble')
 export class BLEController {
   constructor(private readonly bleService: BLEService) {}
