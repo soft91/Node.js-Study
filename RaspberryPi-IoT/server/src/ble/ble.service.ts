@@ -9,6 +9,7 @@ export class BLEService {
     { name: string; uuid: string; peripheral: Peripheral }
   > = new Map();
   private connectedDevice: Peripheral | null = null;
+  private isScanning = false;
 
   constructor() {
     noble.on('stateChange', (state: string) => {
@@ -17,6 +18,7 @@ export class BLEService {
       } else {
         console.log('BLE not powered on. Stopping scan.');
         noble.stopScanning();
+        this.isScanning = false;
       }
     });
 
@@ -34,25 +36,47 @@ export class BLEService {
     });
   }
 
-  startScanning(): Promise<void> {
+  startScanning(): Promise<{ message: string }> {
     return new Promise((resolve, reject) => {
+      if (this.isScanning) {
+        return reject(
+          new HttpException(
+            'Scanning already in progress',
+            HttpStatus.CONFLICT,
+          ),
+        );
+      }
+
+      this.isScanning = true;
       noble.startScanning([], true, (err: Error | null | undefined) => {
         if (err) {
           console.error('Error starting scan:', err);
+          this.isScanning = false;
           return reject(err);
         }
+
         console.log('Scanning started...');
-        resolve();
+
+        // 60초 후 스캔 자동 중지
+        setTimeout(() => {
+          noble.stopScanning();
+          this.isScanning = false;
+          console.log('Scanning stopped automatically after 60 seconds.');
+        }, 60000);
+
+        resolve({ message: 'Scanning started for 60 seconds' });
       });
     });
   }
 
   getDiscoveredDevices() {
-    return Array.from(this.discoveredDevices.values()).map((device) => ({
-      name: device.name,
-      uuid: device.uuid,
-      id: device.peripheral.id,
-    }));
+    return Array.from(this.discoveredDevices.values())
+      .filter((device) => device.name !== 'Unknown')
+      .map((device) => ({
+        name: device.name,
+        uuid: device.uuid,
+        id: device.peripheral.id,
+      }));
   }
 
   async connectToDevice(deviceId: string): Promise<void> {

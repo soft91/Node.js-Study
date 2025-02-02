@@ -1,44 +1,28 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-#root {
-	max-width: 1280px;
-	margin: 0 auto;
-	padding: 2rem;
-	text-align: center;
-}
-
-.logo {
-	height: 6em;
-	padding: 1.5em;
-	will-change: filter;
-	transition: filter 300ms;
-}
-.logo:hover {
-	filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-	filter: drop-shadow(0 0 2em #61dafbaa);
+/* 🛠 기본 스타일 초기화 */
+html,
+body {
+	@apply bg-gray-50 text-gray-900;
+	font-family: "Inter", sans-serif;
 }
 
-@keyframes logo-spin {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
+/* 🛠 기본 레이아웃 설정 */
+.container {
+	@apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-	a:nth-of-type(2) .logo {
-		animation: logo-spin infinite 20s linear;
-	}
+/* 🛠 버튼 스타일 기본값 */
+.btn {
+	@apply px-4 py-2 rounded-lg text-white font-medium transition;
 }
 
-.card {
-	padding: 2em;
+.btn-primary {
+	@apply bg-blue-500 hover:bg-blue-600;
 }
 
-.read-the-docs {
-	color: #888;
+.btn-secondary {
+	@apply bg-gray-600 hover:bg-gray-700;
 }
