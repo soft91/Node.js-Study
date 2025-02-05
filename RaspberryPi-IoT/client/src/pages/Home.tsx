@@ -1,4 +1,3 @@
-// src/pages/Home.tsx
 import { useState } from "react";
 
 export const Home = () => {
@@ -39,8 +38,8 @@ export const Home = () => {
 				{ method: "POST" }
 			);
 			const data = await response.json();
-			setConnectedDevice(deviceId);
 			console.log(data.message);
+			setConnectedDevice(deviceId);
 		} catch (error) {
 			console.error("장치 연결 실패:", error);
 		}
@@ -75,10 +74,15 @@ export const Home = () => {
 							>
 								<span>{device.name || "알 수 없는 장치"}</span>
 								<button
-									className="px-3 py-1 text-sm bg-green-500 text-white rounded"
+									className={`px-3 py-1 text-sm text-white rounded ${
+										connectedDevice === device.id
+											? "bg-gray-500 cursor-not-allowed"
+											: "bg-green-500 hover:bg-green-600"
+									}`}
 									onClick={() => connectToDevice(device.id)}
+									disabled={connectedDevice === device.id}
 								>
-									연결
+									{connectedDevice === device.id ? "연결됨" : "연결"}
 								</button>
 							</li>
 						))
