@@ -70,20 +70,19 @@ export const Home = () => {
 						devices.map((device) => (
 							<li
 								key={device.id}
-								className="flex justify-between items-center p-2 border-b"
+								className={`flex justify-between items-center p-2 border-b cursor-pointer rounded-md transition-all ${
+									connectedDevice === device.id
+										? "bg-gray-300"
+										: "hover:bg-blue-100 hover:border hover:border-blue-400"
+								} cursor-pointer`}
+								onClick={() => connectToDevice(device.id)}
 							>
 								<span>{device.name || "알 수 없는 장치"}</span>
-								<button
-									className={`px-3 py-1 text-sm text-white rounded ${
-										connectedDevice === device.id
-											? "bg-gray-500 cursor-not-allowed"
-											: "bg-green-500 hover:bg-green-600"
-									}`}
-									onClick={() => connectToDevice(device.id)}
-									disabled={connectedDevice === device.id}
-								>
-									{connectedDevice === device.id ? "연결됨" : "연결"}
-								</button>
+								{connectedDevice === device.id && (
+									<span className="text-green-600 font-semibold">
+										연결됨
+									</span>
+								)}
 							</li>
 						))
 					) : (
