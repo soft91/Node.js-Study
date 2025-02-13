@@ -70,11 +70,11 @@ export const Home = () => {
 						devices.map((device) => (
 							<li
 								key={device.id}
-								className={`flex justify-between items-center p-2 border-b cursor-pointer rounded-md transition-all ${
+								className={`flex justify-between items-center p-2 border border-transparent cursor-pointer rounded-md transition-all ${
 									connectedDevice === device.id
 										? "bg-gray-300"
-										: "hover:bg-blue-100 hover:border hover:border-blue-400"
-								} cursor-pointer`}
+										: "hover:bg-blue-100 hover:border-white"
+								}`}
 								onClick={() => connectToDevice(device.id)}
 							>
 								<span>{device.name || "알 수 없는 장치"}</span>
