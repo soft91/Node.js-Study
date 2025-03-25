@@ -88,6 +88,56 @@ app.delete("/delete", async (req, res) => {
 	}
 });
 
+app.post("/write-comments", async (req, res) => {
+	const { id, name, password, content } = req.body;
+	const post = await postService.getPostById(collection, id);
+
+	if (post.comments) {
+		post.comments.push({
+			idx: post.comments.length + 1,
+			name,
+			password,
+			content,
+			createDt: new Date().toISOString(),
+		});
+	} else {
+		post.comments = [
+			{
+				idx: 1,
+				name,
+				password,
+				content,
+				createDt: new Date().toISOString(),
+			},
+		];
+	}
+
+	postService.updatePost(collection, id, post);
+	res.redirect(`/detail/${id}`);
+});
+
+app.delete("/delete-comment", async (req, res) => {
+	const { id, idx, password } = req.body;
+
+	const post = await collection.findOne(
+		{
+			_id: ObjectId(id),
+			comments: { $elemMatch: { idx: parseInt(idx), password } },
+		},
+		postService.projectionOption
+	);
+
+	if (!post) {
+		return res.json({ isSuccess: false });
+	}
+
+	post.comments = post.comments.filter(
+		(comment) => comment.idx !== parseInt(idx)
+	);
+	postService.updatePost(collection, id, post);
+	return res.json({ isSuccess: true });
+});
+
 app.get("/detail/:id", async (req, res) => {
 	const result = await postService.getDetailPost(collection, req.params.id);
 	res.render("detail", { title: "테스트 게시판", post: result.value });
