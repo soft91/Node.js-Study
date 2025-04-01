@@ -27,8 +27,9 @@ export class BlogController {
   }
 
   @Get('/:id')
-  getPost(@Param('id') id: string) {
-    return this.blogService.getPost(id);
+  async getPost(@Param('id') id: string) {
+    const post = await this.blogService.getPost(id);
+    return post;
   }
 
   @Put('/:id')
