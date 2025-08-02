@@ -1,0 +1,24 @@
+{
+	"name": "websocket-test",
+	"version": "1.0.0",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "ts-node server.ts",
+		"dev": "ts-node --watch server.ts",
+		"build": "tsc server.ts",
+		"serve": "node dist/server.js"
+	},
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"dependencies": {
+		"ws": "^8.18.3"
+	},
+	"devDependencies": {
+		"@types/node": "^24.1.0",
+		"@types/ws": "^8.5.10",
+		"typescript": "^5.0.0",
+		"ts-node": "^10.9.0"
+	}
+}
