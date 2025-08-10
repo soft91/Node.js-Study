@@ -38,8 +38,8 @@ __decorate([
     __metadata("design:returntype", String)
 ], AppController.prototype, "getHello", null);
 __decorate([
-    (0, common_1.Post)('file-upload'),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', multer_options_1.multerOption)),
+    (0, common_1.Post)("file-upload"),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)("file", multer_options_1.multerOption)),
     __param(0, (0, common_1.UploadedFile)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
