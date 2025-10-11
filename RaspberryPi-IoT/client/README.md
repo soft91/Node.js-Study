@@ -1,50 +1,79 @@
-# React + TypeScript + Vite
+# IoT Client (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Raspberry Pi IoT 프로젝트의 React 프론트엔드 클라이언트입니다.
 
-Currently, two official plugins are available:
+## 설치
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+npm install
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## 환경 변수
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+프로젝트 루트에 `.env` 파일을 생성하세요:
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+## 실행
+
+```bash
+# 개발 서버 시작
+npm run dev
+
+# 프로덕션 빌드
+npm run build
+
+# 빌드 결과 미리보기
+npm run preview
+```
+
+## 프로젝트 구조
+
+```
+src/
+├── app/
+│   └── providers/
+│       └── routers.tsx   # 라우터 설정
+├── pages/                # 페이지 컴포넌트
+│   ├── Home.tsx          # 홈 페이지 (BLE 장치 관리)
+│   └── About.tsx         # 소개 페이지
+├── services/             # API 서비스 레이어
+│   ├── api.ts            # 기본 API 클라이언트
+│   └── ble.service.ts    # BLE API 서비스
+├── shared/               # 공유 컴포넌트
+│   └── ui/
+│       └── Layout.tsx    # 레이아웃 컴포넌트
+├── types/                # TypeScript 타입 정의
+│   └── ble.types.ts      # BLE 관련 타입
+├── App.tsx               # 루트 컴포넌트
+└── main.tsx              # 앱 진입점
+```
+
+## 주요 기능
+
+### 블루투스 장치 관리
+
+-  BLE 장치 스캔
+-  장치 목록 표시
+-  장치 연결/연결 해제
+-  에러 처리 및 사용자 피드백
+
+### 기술 스택
+
+-  React 18
+-  TypeScript
+-  React Router v6
+-  Tailwind CSS
+-  Vite
+
+## 린트 및 포맷
+
+```bash
+# ESLint 실행
+npm run lint
+
+# Prettier 포맷팅
+npm run format
 ```

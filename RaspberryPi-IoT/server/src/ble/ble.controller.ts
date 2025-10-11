@@ -1,37 +1,43 @@
-import { Controller, Get, Post, Param, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Param } from '@nestjs/common';
 import { BLEService } from './ble.service';
-import { Response } from 'express';
+import {
+  BLEDevice,
+  ScanResponse,
+  ConnectResponse,
+  ReadDataResponse,
+} from './dto/ble.dto';
+import { BLE_MESSAGES } from './constants/ble.constants';
 
-// 클라이언트 요청을 처리하고, 응답을 반환. 필요한 경우 서비스를 호출.
 @Controller('ble')
 export class BLEController {
   constructor(private readonly bleService: BLEService) {}
 
   @Get('start-scan')
-  async startScan(@Res() res: Response) {
-    try {
-      await this.bleService.startScanning();
-      res.json({ message: 'Scanning started' });
-    } catch (error) {
-      res
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .json({ error: error.message });
-    }
+  async startScan(): Promise<ScanResponse> {
+    return await this.bleService.startScanning();
+  }
+
+  @Post('stop-scan')
+  stopScan(): { message: string } {
+    this.bleService.stopScanningManually();
+    return { message: 'Scanning stopped' };
   }
 
   @Get('devices')
-  getDevices() {
+  getDevices(): BLEDevice[] {
     return this.bleService.getDiscoveredDevices();
   }
 
   @Post('connect/:deviceId')
-  async connectToDevice(@Param('deviceId') deviceId: string) {
+  async connectToDevice(
+    @Param('deviceId') deviceId: string,
+  ): Promise<ConnectResponse> {
     await this.bleService.connectToDevice(deviceId);
-    return { message: 'Connected to device' };
+    return { message: BLE_MESSAGES.CONNECTED_TO_DEVICE };
   }
 
   @Get('connected-device')
-  getConnectedDevice() {
+  getConnectedDevice(): BLEDevice {
     return this.bleService.getConnectedDevice();
   }
 
@@ -39,8 +45,13 @@ export class BLEController {
   async readData(
     @Param('serviceId') serviceId: string,
     @Param('characteristicId') characteristicId: string,
-  ) {
+  ): Promise<ReadDataResponse> {
     const data = await this.bleService.readData(serviceId, characteristicId);
     return { data };
+  }
+
+  @Get('scan-status')
+  getScanStatus(): { isScanning: boolean } {
+    return this.bleService.getScanStatus();
   }
 }
