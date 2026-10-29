@@ -4,6 +4,7 @@ import type {
   KmaCurrentWeather,
   GridCoordinates,
   KmaForecastItem,
+  KmaMidForecast,
   LocationCoordinates,
 } from './weather.types.js';
 import {
@@ -12,6 +13,7 @@ import {
   getGridCoordinates,
   getJson,
   getText,
+  getMidForecast,
 } from './weather.util.js';
 
 @Injectable()
@@ -19,11 +21,45 @@ export class WeatherProvider {
   private readonly weatherUrl: string;
   private readonly gridUrl: string;
   private readonly apiKey: string;
+  private readonly midWeatherUrl: string;
 
   constructor(configService: ConfigService) {
     this.weatherUrl = configService.getOrThrow<string>('WEATHER_API_URL');
+    this.midWeatherUrl =
+      configService.get<string>('WEATHER_MID_API_URL') ??
+      this.weatherUrl.replace(
+        'VilageFcstInfoService_2.0',
+        'MidFcstInfoService',
+      );
     this.gridUrl = configService.getOrThrow<string>('WEATHER_LOCATION_API_URL');
     this.apiKey = configService.getOrThrow<string>('WEATHER_API_KEY');
+  }
+
+  async getMidForecast(
+    landRegId: string,
+    temperatureRegId: string,
+    tmFc: string,
+  ): Promise<KmaMidForecast[]> {
+    const params = {
+      authKey: this.apiKey,
+      pageNo: '1',
+      numOfRows: '10',
+      dataType: 'JSON',
+      tmFc,
+    };
+
+    const [landResponse, temperatureResponse] = await Promise.all([
+      getJson(`${this.midWeatherUrl}/getMidLandFcst`, {
+        ...params,
+        regId: landRegId,
+      }),
+      getJson(`${this.midWeatherUrl}/getMidTa`, {
+        ...params,
+        regId: temperatureRegId,
+      }),
+    ]);
+
+    return getMidForecast(landResponse, temperatureResponse, tmFc.slice(0, 8));
   }
 
   // 현재 관측 날씨

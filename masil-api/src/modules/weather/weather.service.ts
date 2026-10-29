@@ -23,14 +23,29 @@ export class WeatherService {
       this.getUltraShortBaseDateTime(now);
     const { baseDate: shortDate, baseTime: shortTime } =
       this.getShortBaseDateTime(now);
+    const midForecastRegion = this.getMidForecastRegion(lat, lon);
+    const midForecastTime = this.getMidForecastBaseDateTime(now);
 
-    const [current, ultraShort, short] = await Promise.all([
+    const [current, ultraShort, short, mid] = await Promise.all([
       this.weatherProvider.getCurrentWeather(nx, ny, currentDate, currentTime),
       this.weatherProvider.getUltraShortForecast(nx, ny, ultraDate, ultraTime),
       this.weatherProvider.getShortForecast(nx, ny, shortDate, shortTime),
+      this.weatherProvider.getMidForecast(
+        midForecastRegion.landRegId,
+        midForecastRegion.temperatureRegId,
+        midForecastTime,
+      ),
     ]);
 
-    return formatWeatherByLocation(current, ultraShort, short);
+    return formatWeatherByLocation(
+      current,
+      ultraShort,
+      short,
+      mid,
+      now,
+      lat,
+      lon,
+    );
   }
 
   private async getCurrentLocation(
@@ -100,6 +115,50 @@ export class WeatherService {
     }
 
     return this.formatBaseDateTime(baseDateTime, '00');
+  }
+
+  private getMidForecastBaseDateTime(now: Date): string {
+    const baseDateTime = new Date(now);
+    const hour = baseDateTime.getUTCHours();
+
+    if (hour < 6) {
+      baseDateTime.setUTCDate(baseDateTime.getUTCDate() - 1);
+      baseDateTime.setUTCHours(18);
+    } else if (hour < 18) {
+      baseDateTime.setUTCHours(6);
+    } else {
+      baseDateTime.setUTCHours(18);
+    }
+
+    return `${this.formatBaseDateTime(baseDateTime, '00').baseDate}${String(baseDateTime.getUTCHours()).padStart(2, '0')}00`;
+  }
+
+  private getMidForecastRegion(
+    lat: number,
+    lon: number,
+  ): {
+    landRegId: string;
+    temperatureRegId: string;
+  } {
+    if (lat < 34.8)
+      return { landRegId: '11G00000', temperatureRegId: '11G00201' };
+    if (lat < 35.5 && lon < 127.8)
+      return { landRegId: '11F20000', temperatureRegId: '11F20503' };
+    if (lat < 35.9 && lon >= 127.8)
+      return { landRegId: '11H20000', temperatureRegId: '11H20201' };
+    if (lat < 36.3)
+      return { landRegId: '11F10000', temperatureRegId: '11F10201' };
+    if (lat < 36.9 && lon < 127.7)
+      return { landRegId: '11C20000', temperatureRegId: '11C20401' };
+    if (lat < 37.5 && lon >= 128.1)
+      return { landRegId: '11H10000', temperatureRegId: '11H10701' };
+    if (lat < 37.5)
+      return { landRegId: '11C10000', temperatureRegId: '11C10301' };
+    if (lat >= 37.7 && lon >= 128)
+      return { landRegId: '11D20000', temperatureRegId: '11D20501' };
+    if (lat >= 37.7 && lon >= 127.5)
+      return { landRegId: '11D10000', temperatureRegId: '11D10301' };
+    return { landRegId: '11B00000', temperatureRegId: '11B10101' };
   }
 
   private formatBaseDateTime(date: Date, minute: string): BaseDateTime {

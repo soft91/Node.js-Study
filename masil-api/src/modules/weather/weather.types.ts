@@ -20,6 +20,10 @@ export interface BaseDateTime {
 }
 
 export interface WeatherByLocation {
+  /** 조회한 좌표 */
+  location: WeatherLocation;
+  /** 기상청 데이터를 조회한 시각 (ISO 8601) */
+  updatedAt: string;
   /** 현재 관측 날씨 */
   current: CurrentWeather;
   /** 일별 최저·최고 기온 예보 */
@@ -27,6 +31,23 @@ export interface WeatherByLocation {
   /** 시간별 날씨 예보 */
   hourly: HourlyWeather[];
 }
+
+export interface WeatherLocation {
+  latitude: number;
+  longitude: number;
+  /** 역지오코딩은 아직 지원하지 않으므로 항상 null */
+  name: string | null;
+}
+
+export type WeatherCondition =
+  | 'clear'
+  | 'partly_cloudy'
+  | 'cloudy'
+  | 'rain'
+  | 'rain_snow'
+  | 'snow'
+  | 'shower'
+  | 'unknown';
 
 export interface KmaCurrentWeather {
   /** 현재 기온 (섭씨) */
@@ -52,6 +73,8 @@ export interface CurrentWeather {
   sky: number | null;
   /** 강수 형태 코드 */
   precipitationType: number;
+  /** 하늘·강수 형태를 조합한 날씨 상태 */
+  condition: WeatherCondition;
   /** 풍속 (m/s) */
   windSpeed: number;
   /** 체감 온도 (현재 미계산) */
@@ -65,6 +88,10 @@ export interface DailyWeather {
   minTemperature: number | null;
   /** 최고 기온 (섭씨) */
   maxTemperature: number | null;
+  /** 해당 일자 정오 예보의 날씨 상태 */
+  condition: WeatherCondition | null;
+  /** 해당 일자의 최대 강수 확률 (퍼센트) */
+  maxPrecipitationProbability: number | null;
 }
 
 export interface HourlyWeather {
@@ -72,14 +99,20 @@ export interface HourlyWeather {
   dateTime: string;
   /** 기온 (섭씨) */
   temperature: number | null;
+  /** 상대 습도 (퍼센트) */
+  humidity: number | null;
   /** 하늘 상태 코드 */
   sky: number | null;
   /** 강수 형태 코드 */
   precipitationType: number | null;
+  /** 하늘·강수 형태를 조합한 날씨 상태 */
+  condition: WeatherCondition | null;
   /** 강수 확률 (퍼센트) */
   precipitationProbability: number | null;
   /** 강수량 */
   precipitation: string | null;
+  /** 풍속 (m/s) */
+  windSpeed: number | null;
 }
 
 export interface KmaWeatherItem {
@@ -98,4 +131,12 @@ export interface KmaForecastItem {
   fcstTime: string;
   /** 예보 요소의 값 */
   fcstValue: string;
+}
+
+export interface KmaMidForecast {
+  date: string;
+  minTemperature: number | null;
+  maxTemperature: number | null;
+  condition: WeatherCondition | null;
+  maxPrecipitationProbability: number | null;
 }
