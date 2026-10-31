@@ -295,9 +295,30 @@ function mergeDailyWeather(
   short: DailyWeather[],
   mid: KmaMidForecast[],
 ): DailyWeather[] {
-  const byDate = new Map(
-    [...mid, ...short].map((forecast) => [forecast.date, forecast]),
+  const byDate = new Map<string, DailyWeather>(
+    mid.map((forecast) => [forecast.date, forecast]),
   );
+
+  for (const forecast of short) {
+    const midForecast = byDate.get(forecast.date);
+
+    byDate.set(
+      forecast.date,
+      midForecast === undefined
+        ? forecast
+        : {
+            date: forecast.date,
+            minTemperature:
+              forecast.minTemperature ?? midForecast.minTemperature,
+            maxTemperature:
+              forecast.maxTemperature ?? midForecast.maxTemperature,
+            condition: forecast.condition ?? midForecast.condition,
+            maxPrecipitationProbability:
+              forecast.maxPrecipitationProbability ??
+              midForecast.maxPrecipitationProbability,
+          },
+    );
+  }
 
   return [...byDate.values()]
     .sort((a, b) => a.date.localeCompare(b.date))
