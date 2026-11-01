@@ -21,8 +21,9 @@ export function formatWeatherByLocation(
   now: Date,
   lat: number,
   lon: number,
+  locationName: string | null = null,
 ): {
-  location: { latitude: number; longitude: number; name: null };
+  location: { latitude: number; longitude: number; name: string | null };
   updatedAt: string;
   current: CurrentWeather;
   daily: DailyWeather[];
@@ -48,7 +49,7 @@ export function formatWeatherByLocation(
         current.windSpeed,
       ),
     },
-    location: { latitude: lat, longitude: lon, name: null },
+    location: { latitude: lat, longitude: lon, name: locationName },
     updatedAt: formatKstIsoDate(now),
     daily: mergeDailyWeather(formatDailyWeather(short), mid),
     hourly: formatHourlyWeather(short, now),
@@ -124,8 +125,9 @@ export function getMidForecast(
 export async function getJson(
   url: string,
   params: Record<string, string>,
+  headers?: HeadersInit,
 ): Promise<unknown> {
-  return (await request(url, params)).json();
+  return (await request(url, params, headers)).json();
 }
 
 export async function getText(
@@ -188,10 +190,12 @@ export function getGridCoordinates(text: string): GridCoordinates {
 async function request(
   url: string,
   params: Record<string, string>,
+  headers?: HeadersInit,
 ): Promise<Response> {
   try {
     const response = await fetch(`${url}?${new URLSearchParams(params)}`, {
       signal: AbortSignal.timeout(10000),
+      headers,
     });
 
     if (!response.ok) {
@@ -208,6 +212,27 @@ async function request(
 
     throw new BadGatewayException('기상청 API에 연결할 수 없습니다.');
   }
+}
+
+export function getKakaoRegionName(response: unknown): string | null {
+  const root = toRecord(response);
+  const documents = root?.documents;
+
+  if (!Array.isArray(documents)) {
+    throw new BadGatewayException('카카오 지역 정보 응답이 올바르지 않습니다.');
+  }
+
+  const administrativeRegion = documents.find(
+    (document) =>
+      isRecord(document) &&
+      document.region_type === 'H' &&
+      typeof document.address_name === 'string',
+  );
+
+  return isRecord(administrativeRegion) &&
+    typeof administrativeRegion.address_name === 'string'
+    ? administrativeRegion.address_name
+    : null;
 }
 
 function getWeatherItems(response: unknown): KmaWeatherItem[] {
@@ -322,6 +347,10 @@ function mergeDailyWeather(
 
   return [...byDate.values()]
     .sort((a, b) => a.date.localeCompare(b.date))
+    .filter(
+      (forecast) =>
+        forecast.minTemperature !== null && forecast.maxTemperature !== null,
+    )
     .slice(0, DAILY_FORECAST_LIMIT);
 }
 

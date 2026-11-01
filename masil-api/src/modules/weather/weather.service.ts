@@ -15,7 +15,10 @@ export class WeatherService {
     lat: number,
     lon: number,
   ): Promise<WeatherByLocation> {
-    const { nx, ny } = await this.getCurrentLocation(lat, lon);
+    const [{ nx, ny }, locationName] = await Promise.all([
+      this.getCurrentLocation(lat, lon),
+      this.weatherProvider.getRegionName({ lat, lon }),
+    ]);
     const now = this.getKstNow();
     const { baseDate: currentDate, baseTime: currentTime } =
       this.getCurrentBaseDateTime(now);
@@ -45,6 +48,7 @@ export class WeatherService {
       now,
       lat,
       lon,
+      locationName,
     );
   }
 

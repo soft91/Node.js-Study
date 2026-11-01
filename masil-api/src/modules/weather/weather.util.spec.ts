@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   formatWeatherByLocation,
   getFeelsLike,
+  getKakaoRegionName,
   getMidForecast,
   getWeatherCondition,
 } from './weather.util.js';
@@ -17,6 +18,17 @@ describe('weather utilities', () => {
 
   it('calculates apparent temperature to one decimal place', () => {
     expect(getFeelsLike(10.6, 80, 2.3)).toBe(8.4);
+  });
+
+  it('returns the administrative region name from a Kakao response', () => {
+    expect(
+      getKakaoRegionName({
+        documents: [
+          { region_type: 'B', address_name: '서울특별시 금천구 가산동' },
+          { region_type: 'H', address_name: '서울특별시 금천구 가산동' },
+        ],
+      }),
+    ).toBe('서울특별시 금천구 가산동');
   });
 
   it('combines middle-range land and temperature forecasts', () => {
@@ -102,6 +114,60 @@ describe('weather utilities', () => {
         maxTemperature: 18,
         condition: 'cloudy',
         maxPrecipitationProbability: 30,
+      },
+    ]);
+  });
+
+  it('excludes daily forecasts without both minimum and maximum temperatures', () => {
+    const weather = formatWeatherByLocation(
+      {
+        temperature: 10,
+        humidity: 60,
+        precipitation: '0',
+        precipitationType: 0,
+        windSpeed: 1,
+        windDirection: 0,
+      },
+      [],
+      [
+        {
+          category: 'SKY',
+          fcstDate: '20261101',
+          fcstTime: '1500',
+          fcstValue: '4',
+        },
+        {
+          category: 'PTY',
+          fcstDate: '20261101',
+          fcstTime: '1500',
+          fcstValue: '0',
+        },
+        {
+          category: 'TMN',
+          fcstDate: '20261102',
+          fcstTime: '0600',
+          fcstValue: '9',
+        },
+        {
+          category: 'TMX',
+          fcstDate: '20261102',
+          fcstTime: '1500',
+          fcstValue: '16',
+        },
+      ],
+      [],
+      new Date(Date.UTC(2026, 10, 1, 6, 0, 0)),
+      37.5665,
+      126.978,
+    );
+
+    expect(weather.daily).toEqual([
+      {
+        date: '2026-11-02',
+        minTemperature: 9,
+        maxTemperature: 16,
+        condition: null,
+        maxPrecipitationProbability: null,
       },
     ]);
   });

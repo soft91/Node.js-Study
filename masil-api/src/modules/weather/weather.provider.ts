@@ -12,6 +12,7 @@ import {
   getForecastItems,
   getGridCoordinates,
   getJson,
+  getKakaoRegionName,
   getText,
   getMidForecast,
 } from './weather.util.js';
@@ -22,6 +23,9 @@ export class WeatherProvider {
   private readonly gridUrl: string;
   private readonly apiKey: string;
   private readonly midWeatherUrl: string;
+  private readonly kakaoLocalUrl =
+    'https://dapi.kakao.com/v2/local/geo/coord2regioncode.json';
+  private readonly kakaoRestApiKey: string;
 
   constructor(configService: ConfigService) {
     this.weatherUrl = configService.getOrThrow<string>('WEATHER_API_URL');
@@ -33,6 +37,7 @@ export class WeatherProvider {
       );
     this.gridUrl = configService.getOrThrow<string>('WEATHER_LOCATION_API_URL');
     this.apiKey = configService.getOrThrow<string>('WEATHER_API_KEY');
+    this.kakaoRestApiKey = configService.getOrThrow<string>('KAKAO_REST_API_KEY');
   }
 
   async getMidForecast(
@@ -138,5 +143,20 @@ export class WeatherProvider {
     });
 
     return getGridCoordinates(response);
+  }
+
+  async getRegionName({ lat, lon }: LocationCoordinates): Promise<string | null> {
+    const response = await getJson(
+      this.kakaoLocalUrl,
+      {
+        x: String(lon),
+        y: String(lat),
+        input_coord: 'WGS84',
+        output_coord: 'WGS84',
+      },
+      { Authorization: `KakaoAK ${this.kakaoRestApiKey}` },
+    );
+
+    return getKakaoRegionName(response);
   }
 }
